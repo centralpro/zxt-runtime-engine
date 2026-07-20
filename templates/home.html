@@ -4,19 +4,21 @@
 {% block main %}
 <main>
   <section class="hero-stage" aria-label="首页首屏">
-    <div class="hero-stage__media">
-      <picture>
-        <source
-          media="(max-width: 720px)"
-          srcset="{{ home.hero_image_portrait | default('/images/hero/blue-hour-portrait.jpg') }}"
-        >
-        <img
-          src="{{ home.hero_image | default('/images/hero/blue-hour.jpg') }}"
-          alt=""
-          decoding="async"
-          fetchpriority="high"
-        >
-      </picture>
+    <div class="hero-stage__media" aria-hidden="true">
+      <img
+        class="hero-stage__img hero-stage__img--landscape"
+        src="{{ home.hero_image | default('/images/hero/blue-hour.jpg') }}"
+        alt=""
+        decoding="async"
+        fetchpriority="high"
+      >
+      <img
+        class="hero-stage__img hero-stage__img--portrait"
+        src="{{ home.hero_image_portrait | default('/images/hero/blue-hour-portrait.jpg') }}"
+        alt=""
+        decoding="async"
+        fetchpriority="high"
+      >
     </div>
     <div class="hero-stage__veil" aria-hidden="true"></div>
     <div class="hero-stage__inner">
