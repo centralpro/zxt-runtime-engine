@@ -10,7 +10,9 @@ from runtime_blog.config import load_site_config, package_paths
 from runtime_blog.content_loader import (
     accessible_posts,
     discover_pages,
+    discover_photos,
     discover_posts,
+    group_photos_by_month,
     load_site_data,
     published_posts,
 )
@@ -104,9 +106,11 @@ def generate_llms_txt(site: SiteConfig, posts: list[Post]) -> str:
 
 
 def copy_local_media(root: Path, dist: Path) -> None:
+    from runtime_blog.media_assets import copy_media_tree
+
     public_media = root / "public" / "media"
     if public_media.is_dir():
-        _copy_tree(public_media, dist / "media")
+        copy_media_tree(public_media, dist / "media")
     public_images = root / "public" / "images"
     if public_images.is_dir():
         _copy_tree(public_images, dist / "images")
@@ -147,6 +151,8 @@ class Builder:
 
         indexed = published_posts(posts)
         reachable = accessible_posts(posts)
+        photos = discover_photos(self.root)
+        photo_months = group_photos_by_month(photos)
 
         if self.output.exists():
             shutil.rmtree(self.output)
@@ -157,6 +163,7 @@ class Builder:
 
         _write(self.output / "index.html", renderer.home(indexed))
         _write(self.output / "posts" / "index.html", renderer.posts_index(indexed))
+        _write(self.output / "photos" / "index.html", renderer.photos_index(photos, photo_months))
 
         for post in reachable:
             _write(
@@ -172,15 +179,13 @@ class Builder:
         for page in pages:
             _write(self.output / page.slug / "index.html", renderer.page(page))
 
-        # Categories / tags / archive
+        # Categories / tags
         by_category: dict[str, list[Post]] = defaultdict(list)
         by_tag: dict[str, list[Post]] = defaultdict(list)
-        by_year: dict[int, list[Post]] = defaultdict(list)
         for post in indexed:
             by_category[post.category].append(post)
             for tag in post.tags:
                 by_tag[tag].append(post)
-            by_year[post.date.year].append(post)
 
         for name, group in by_category.items():
             _write(
@@ -193,11 +198,15 @@ class Builder:
                 self.output / "tags" / safe / "index.html",
                 renderer.tag(name, group),
             )
-        _write(self.output / "archive" / "index.html", renderer.archive(dict(sorted(by_year.items(), reverse=True))))
         _write(self.output / "404.html", renderer.not_found())
 
         _write(self.output / "rss.xml", generate_rss(self.site, indexed))
-        sitemap_urls = ["/"] + [p.url_path for p in indexed] + [f"/{pg.slug}/" for pg in pages]
+        sitemap_urls = (
+            ["/"]
+            + ["/photos/"]
+            + [p.url_path for p in indexed]
+            + [f"/{pg.slug}/" for pg in pages]
+        )
         _write(self.output / "sitemap.xml", generate_sitemap(self.site, sitemap_urls))
         _write(self.output / "robots.txt", generate_robots(self.site))
         _write(self.output / "llms.txt", generate_llms_txt(self.site, indexed))

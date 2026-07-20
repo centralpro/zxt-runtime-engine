@@ -5,7 +5,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from runtime_blog.config import package_paths
-from runtime_blog.models import Page, Post, SiteConfig, SiteData
+from runtime_blog.models import Page, Photo, Post, SiteConfig, SiteData
 
 
 def create_env(templates_dir: Path | None = None) -> Environment:
@@ -28,7 +28,7 @@ class PageRenderer:
 
     def _base_ctx(self) -> dict:
         nav = self.data.navigation.get("items") or [
-            {"label": "首页", "href": "/"},
+            {"label": "影像", "href": "/photos/"},
             {"label": "文章", "href": "/posts/"},
             {"label": "关于", "href": "/about/"},
         ]
@@ -45,18 +45,23 @@ class PageRenderer:
         return template.render(**self._base_ctx(), **ctx)
 
     def home(self, posts: list[Post]) -> str:
-        featured_slugs = self.data.featured.get("slugs") or []
-        featured = [p for p in posts if p.slug in featured_slugs or p.featured][:5]
         latest = posts[:6]
         return self.render(
             "home.html",
             home=self.data.home,
             latest_posts=latest,
-            featured_posts=featured,
         )
 
     def posts_index(self, posts: list[Post]) -> str:
         return self.render("posts.html", posts=posts, page_title="文章")
+
+    def photos_index(self, photos: list[Photo], months: list[dict]) -> str:
+        return self.render(
+            "photos.html",
+            photos=photos,
+            months=months,
+            page_title="影像",
+        )
 
     def article(self, post: Post, posts: list[Post]) -> str:
         indexed = [p for p in posts if p.in_indexes]
@@ -104,6 +109,3 @@ class PageRenderer:
             posts=posts,
             page_title=f"标签 · {name}",
         )
-
-    def archive(self, years: dict[int, list[Post]]) -> str:
-        return self.render("archive.html", years=years, page_title="归档")

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}影像 · {{ site.title }}{% endblock %}
+{% block body_class %}page-photos{% endblock %}
+{% block content %}
+<section class="section photos-page">
+  <header class="photos-page__intro">
+    <h1>影像</h1>
+  </header>
+
+  {% if months %}
+  <div class="photos-layout">
+    <aside class="photos-rail" aria-label="时间轴">
+      <ol class="photos-rail__list">
+        {% for month in months %}
+        <li>
+          <a class="photos-rail__link" href="#month-{{ month.key }}">{{ month.label }}</a>
+          <span class="photos-rail__count">{{ month.photos|length }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </aside>
+
+    <div class="photos-stream">
+      {% set ns = namespace(i=0) %}
+      {% for month in months %}
+      <section class="photos-month" id="month-{{ month.key }}">
+        <h2 class="photos-month__label">{{ month.label }}</h2>
+        <div class="photos-grid">
+          {% for photo in month.photos %}
+          <button
+            type="button"
+            class="photos-thumb"
+            data-photo-open
+            data-index="{{ ns.i }}"
+            data-id="{{ photo.id }}"
+            data-src="{{ photo.web_image }}"
+            data-title="{{ photo.title }}"
+            data-location="{{ photo.location }}"
+            data-taken="{{ photo.taken_display }}"
+            data-caption="{{ photo.caption }}"
+            data-tags="{{ photo.tags | join(',') }}"
+            aria-label="查看 {{ photo.title }}"
+          >
+            <img src="{{ photo.web_image }}" alt="{{ photo.title }}" loading="lazy" decoding="async">
+            <span class="photos-thumb__meta">
+              <span class="photos-thumb__title">{{ photo.title }}</span>
+              <span class="photos-thumb__date">{{ photo.taken_display }}</span>
+            </span>
+          </button>
+          {% set ns.i = ns.i + 1 %}
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <p class="muted">暂无影像。使用 <code>runtime-blog new-photo</code> 添加。</p>
+  {% endif %}
+</section>
+
+<dialog class="photo-lightbox" id="photo-lightbox" aria-label="影像详情">
+  <div class="photo-lightbox__shell">
+    <button type="button" class="photo-lightbox__close" data-photo-close aria-label="关闭">关闭</button>
+    <button type="button" class="photo-lightbox__nav photo-lightbox__nav--prev" data-photo-prev aria-label="上一张">‹</button>
+    <figure class="photo-lightbox__figure">
+      <img src="" alt="" data-photo-img>
+      <figcaption class="photo-lightbox__caption">
+        <h2 data-photo-title></h2>
+        <p class="photo-lightbox__line"><span data-photo-taken></span></p>
+        <p class="photo-lightbox__line" data-photo-location-row><span data-photo-location></span></p>
+        <p class="photo-lightbox__line muted" data-photo-caption-row><span data-photo-caption></span></p>
+        <p class="photo-lightbox__tags" data-photo-tags></p>
+      </figcaption>
+    </figure>
+    <button type="button" class="photo-lightbox__nav photo-lightbox__nav--next" data-photo-next aria-label="下一张">›</button>
+  </div>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="/assets/js/photos.js" defer></script>
+{% endblock %}

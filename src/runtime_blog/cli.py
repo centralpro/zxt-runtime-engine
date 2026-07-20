@@ -96,6 +96,41 @@ archived: false
     console.print(f"[green]Created[/green] {path}")
 
 
+@app.command("new-photo")
+def new_photo(
+    title: str = typer.Argument(..., help="Photo title"),
+    root: Optional[Path] = typer.Option(None, "--root", help="Content repo root"),
+    slug: Optional[str] = typer.Option(None, "--slug", help="Photo id / filename stem"),
+) -> None:
+    """Create a photo YAML stub under content/photos/."""
+    from datetime import datetime
+
+    content_root = (root or find_content_root()).resolve()
+    photo_id = slug or slugify(title, allow_unicode=False) or "untitled"
+    photos_dir = content_root / "content" / "photos"
+    media_dir = content_root / "public" / "media" / "photos"
+    photos_dir.mkdir(parents=True, exist_ok=True)
+    media_dir.mkdir(parents=True, exist_ok=True)
+    path = photos_dir / f"{photo_id}.yml"
+    if path.exists():
+        console.print(f"[red]File already exists:[/red] {path}")
+        raise typer.Exit(code=1)
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    body = f"""id: {photo_id}
+title: {title}
+image: /media/photos/{photo_id}.jpg
+taken_at: {now}
+location: 
+tags:
+  - 
+caption: 
+"""
+    path.write_text(body, encoding="utf-8")
+    console.print(f"[green]Created[/green] {path}")
+    console.print(f"[dim]Place image at[/dim] {media_dir / (photo_id + '.jpg')}")
+    console.print("[dim]HEIF/HEIC also supported — build converts to JPG automatically.[/dim]")
+
+
 class _RebuildHandler(FileSystemEventHandler):
     def __init__(self, root: Path, rebuild_flag: list[bool]) -> None:
         super().__init__()

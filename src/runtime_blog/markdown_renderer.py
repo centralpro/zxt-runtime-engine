@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import re
 from dataclasses import dataclass
 
@@ -32,6 +33,14 @@ def _slugify_heading(text: str) -> str:
     cleaned = re.sub(r"[^\w\u4e00-\u9fff\- ]+", "", cleaned, flags=re.UNICODE)
     cleaned = re.sub(r"\s+", "-", cleaned).strip("-")
     return cleaned or "section"
+
+
+def _render_mermaid(code: str) -> str:
+    return (
+        '<div class="mermaid-block" role="figure" aria-label="流程图">'
+        f'<pre class="mermaid">{html.escape(code.strip())}</pre>'
+        "</div>"
+    )
 
 
 def _highlight_code(code: str, lang: str, attrs: str) -> str:
@@ -91,6 +100,8 @@ def render_markdown(source: str) -> RenderResult:
         token = tokens[idx]
         info = token.info.strip() if token.info else ""
         lang, _, attrs = info.partition(" ")
+        if lang.lower() == "mermaid":
+            return _render_mermaid(token.content)
         return _highlight_code(token.content, lang, attrs)
 
     md.add_render_rule("fence", fence)

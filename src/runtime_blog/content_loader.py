@@ -7,7 +7,8 @@ from pathlib import Path
 import yaml
 
 from runtime_blog.config import load_yaml
-from runtime_blog.models import Page, Post, SiteData
+from runtime_blog.media_assets import is_heif, read_taken_at, resolve_media_file
+from runtime_blog.models import Page, Photo, Post, SiteData
 
 FRONT_MATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n(.*)$", re.DOTALL)
 
@@ -93,6 +94,95 @@ def discover_pages(root: Path) -> list[Page]:
     if not pages_dir.is_dir():
         return []
     return [load_page(path) for path in sorted(pages_dir.glob("*.md"))]
+
+
+def _parse_taken_at(value: object) -> datetime:
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=None)
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return datetime.combine(value, datetime.min.time())
+    if isinstance(value, str):
+        text = value.strip().replace("T", " ")
+        for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(text, fmt)
+            except ValueError:
+                continue
+    raise ValueError(f"Invalid taken_at: {value!r}")
+
+
+def load_photo(path: Path) -> Photo:
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"{path}: photo YAML must be a mapping")
+    tags = raw.get("tags") or []
+    if not isinstance(tags, list):
+        raise ValueError(f"{path}: tags must be a list")
+    photo_id = _as_str(raw.get("id") or path.stem)
+    image = _as_str(raw.get("image"))
+    if not image:
+        raise ValueError(f"{path}: image is required")
+    if not image.startswith("/"):
+        image = "/" + image.lstrip("/")
+    return Photo(
+        id=photo_id,
+        title=_as_str(raw.get("title") or photo_id),
+        image=image,
+        taken_at=_parse_taken_at(raw.get("taken_at")),
+        location=_as_str(raw.get("location")),
+        tags=[str(t) for t in tags],
+        caption=_as_str(raw.get("caption")),
+        source_path=path,
+    )
+
+
+def discover_photos(root: Path) -> list[Photo]:
+    photos_dir = root / "content" / "photos"
+    photos: list[Photo] = []
+    if photos_dir.is_dir():
+        photos = [load_photo(path) for path in sorted(photos_dir.glob("*.yml"))]
+        photos.extend(load_photo(path) for path in sorted(photos_dir.glob("*.yaml")))
+    by_id: dict[str, Photo] = {}
+    covered_media: set[str] = set()
+    for photo in photos:
+        by_id[photo.id] = photo
+        media = resolve_media_file(root, photo.image)
+        if media:
+            covered_media.add(media.name.lower())
+        covered_media.add(Path(photo.image).name.lower())
+        covered_media.add(Path(photo.web_image).name.lower())
+
+    media_dir = root / "public" / "media" / "photos"
+    if media_dir.is_dir():
+        for path in sorted(media_dir.iterdir()):
+            if not path.is_file() or not is_heif(path):
+                continue
+            if path.name.lower() in covered_media:
+                continue
+            taken = read_taken_at(path) or datetime.fromtimestamp(path.stat().st_mtime)
+            photo_id = path.stem.lower().replace("_", "-")
+            image = f"/media/photos/{path.name}"
+            by_id[photo_id] = Photo(
+                id=photo_id,
+                title=photo_id,
+                image=image,
+                taken_at=taken,
+            )
+            covered_media.add(path.name.lower())
+
+    return sorted(by_id.values(), key=lambda p: (p.taken_at, p.id), reverse=True)
+
+
+def group_photos_by_month(photos: list[Photo]) -> list[dict]:
+    groups: dict[str, dict] = {}
+    order: list[str] = []
+    for photo in photos:
+        key = photo.month_key
+        if key not in groups:
+            groups[key] = {"key": key, "label": photo.month_label, "photos": []}
+            order.append(key)
+        groups[key]["photos"].append(photo)
+    return [groups[k] for k in order]
 
 
 def load_site_data(root: Path) -> SiteData:

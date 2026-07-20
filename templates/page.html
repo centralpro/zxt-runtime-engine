@@ -11,3 +11,8 @@
   </div>
 </article>
 {% endblock %}
+{% block scripts %}
+{% with html=page.html %}
+{% include "components/mermaid-scripts.html" %}
+{% endwith %}
+{% endblock %}

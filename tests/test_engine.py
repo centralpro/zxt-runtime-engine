@@ -119,6 +119,46 @@ def test_render_markdown_code_and_toc():
     assert result.reading_minutes >= 1
 
 
+def test_render_mermaid_fence():
+    source = "## Flow\n\n```mermaid\nflowchart LR\n  A[相机] --> B[iPhone]\n```\n"
+    result = render_markdown(source)
+    assert 'class="mermaid-block"' in result.html
+    assert 'class="mermaid"' in result.html
+    assert "flowchart LR" in result.html
+    assert "code-block" not in result.html
+
+
+def test_build_includes_mermaid_assets(tmp_path: Path):
+    _write_minimal_content(tmp_path)
+    (tmp_path / "content" / "posts" / "2026" / "diagram.md").write_text(
+        """---
+title: Diagram Post
+slug: diagram-post
+description: Mermaid test
+date: 2026-07-20
+category: Engineering
+tags:
+  - mermaid
+draft: false
+---
+
+## 流程
+
+```mermaid
+flowchart TD
+  Start --> End
+```
+""",
+        encoding="utf-8",
+    )
+    out = Builder(tmp_path).build()
+    page = (out / "posts" / "diagram-post" / "index.html").read_text(encoding="utf-8")
+    assert 'class="mermaid"' in page
+    assert (out / "assets" / "js" / "mermaid.min.js").is_file()
+    assert (out / "assets" / "js" / "mermaid-init.js").is_file()
+    assert "mermaid.min.js" in page
+
+
 def test_resolve_media_refs():
     assert resolve_media_refs("![](@media/posts/a.png)") == "![](/media/posts/a.png)"
 
@@ -140,10 +180,13 @@ def test_load_site_and_build(tmp_path: Path):
     assert (out / "posts.json").is_file()
     assert (out / "media" / "posts" / "demo" / "cover.png").is_file()
     assert (out / "assets" / "css" / "runtime.css").is_file()
+    assert (out / "photos" / "index.html").is_file()
+    assert (out / "archive").exists() is False
 
     home = (out / "index.html").read_text(encoding="utf-8")
     assert "Hello Runtime" in home
     assert "WIP Draft" not in home
+    assert 'href="/photos/"' in home
 
     posts_json = (out / "posts.json").read_text(encoding="utf-8")
     assert "hello-runtime" in posts_json
@@ -206,3 +249,86 @@ def test_load_post_draft_flag(tmp_path: Path):
     post = load_post(tmp_path / "content" / "posts" / "drafts" / "wip.md")
     assert post.draft is True
     assert post.in_indexes is False
+
+
+def test_photos_build(tmp_path: Path):
+    _write_minimal_content(tmp_path)
+    photos = tmp_path / "content" / "photos"
+    media = tmp_path / "public" / "media" / "photos"
+    photos.mkdir(parents=True)
+    media.mkdir(parents=True)
+    (media / "lake.jpg").write_bytes(b"fakejpg")
+    (photos / "lake.yml").write_text(
+        """
+id: lake
+title: Lake
+image: /media/photos/lake.jpg
+taken_at: 2024-11-12 18:24
+location: Shanghai
+tags:
+  - landscape
+caption: Mist
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    out = Builder(tmp_path).build()
+    page = (out / "photos" / "index.html").read_text(encoding="utf-8")
+    assert "Lake" in page
+    assert "/media/photos/lake.jpg" in page
+    assert "2024 年 11 月" in page
+    assert (out / "media" / "photos" / "lake.jpg").is_file()
+
+
+def test_heif_converts_at_build(tmp_path: Path):
+    pytest = __import__("pytest")
+    pillow_heif = pytest.importorskip("pillow_heif")
+    from PIL import Image
+
+    _write_minimal_content(tmp_path)
+    media = tmp_path / "public" / "media" / "photos"
+    media.mkdir(parents=True)
+    pillow_heif.register_heif_opener()
+    heif_path = media / "dawn.heic"
+    Image.new("RGB", (24, 36), color=(20, 40, 80)).save(heif_path)
+
+    photos = tmp_path / "content" / "photos"
+    photos.mkdir(parents=True)
+    (photos / "dawn.yml").write_text(
+        """
+id: dawn
+title: Dawn
+image: /media/photos/dawn.heic
+taken_at: 2025-06-01 05:30
+location: Test
+tags:
+  - blue
+caption: Early light
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    out = Builder(tmp_path).build()
+    page = (out / "photos" / "index.html").read_text(encoding="utf-8")
+    assert "/media/photos/dawn.jpg" in page
+    assert "/media/photos/dawn.heic" not in page
+    assert (out / "media" / "photos" / "dawn.jpg").is_file()
+    assert not (out / "media" / "photos" / "dawn.heic").exists()
+
+
+def test_orphan_heif_discovered(tmp_path: Path):
+    pytest = __import__("pytest")
+    pillow_heif = pytest.importorskip("pillow_heif")
+    from PIL import Image
+
+    _write_minimal_content(tmp_path)
+    media = tmp_path / "public" / "media" / "photos"
+    media.mkdir(parents=True)
+    pillow_heif.register_heif_opener()
+    Image.new("RGB", (16, 16), color=(255, 128, 0)).save(media / "orphan.heic")
+
+    out = Builder(tmp_path).build()
+    page = (out / "photos" / "index.html").read_text(encoding="utf-8")
+    assert "orphan" in page
+    assert (out / "media" / "photos" / "orphan.jpg").is_file()

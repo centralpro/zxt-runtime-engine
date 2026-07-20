@@ -59,3 +59,8 @@
   </footer>
 </article>
 {% endblock %}
+{% block scripts %}
+{% with html=post.html %}
+{% include "components/mermaid-scripts.html" %}
+{% endwith %}
+{% endblock %}

@@ -79,6 +79,44 @@ class Page:
 
 
 @dataclass
+class Photo:
+    id: str
+    title: str
+    image: str
+    taken_at: datetime
+    location: str = ""
+    tags: list[str] = field(default_factory=list)
+    caption: str = ""
+    source_path: Path | None = None
+
+    @property
+    def taken_date(self) -> date:
+        return self.taken_at.date()
+
+    @property
+    def month_key(self) -> str:
+        return self.taken_at.strftime("%Y-%m")
+
+    @property
+    def month_label(self) -> str:
+        return f"{self.taken_at.year} 年 {self.taken_at.month} 月"
+
+    @property
+    def taken_display(self) -> str:
+        return self.taken_at.strftime("%Y-%m-%d %H:%M")
+
+    @property
+    def taken_iso(self) -> str:
+        return self.taken_at.isoformat(sep=" ", timespec="minutes")
+
+    @property
+    def web_image(self) -> str:
+        from runtime_blog.media_assets import web_image_path
+
+        return web_image_path(self.image)
+
+
+@dataclass
 class SiteData:
     home: dict[str, Any] = field(default_factory=dict)
     profile: dict[str, Any] = field(default_factory=dict)

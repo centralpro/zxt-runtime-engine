@@ -3,6 +3,7 @@
 {% block content %}
 <section class="section">
   <h1>文章</h1>
+  <p class="muted" style="margin-top:-0.35rem">按发布时间倒序。</p>
   <div class="post-list">
     {% for post in posts %}
       {% include "components/post-item.html" %}
