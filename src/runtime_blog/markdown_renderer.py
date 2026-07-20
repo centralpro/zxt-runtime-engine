@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import html
 import re
 from dataclasses import dataclass
+
+from runtime_blog.diagram_renderer import render_d2, render_mermaid_fallback
 
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
@@ -36,11 +37,7 @@ def _slugify_heading(text: str) -> str:
 
 
 def _render_mermaid(code: str) -> str:
-    return (
-        '<div class="mermaid-block" role="figure" aria-label="流程图">'
-        f'<pre class="mermaid">{html.escape(code.strip())}</pre>'
-        "</div>"
-    )
+    return render_mermaid_fallback(code)
 
 
 def _highlight_code(code: str, lang: str, attrs: str) -> str:
@@ -102,6 +99,8 @@ def render_markdown(source: str) -> RenderResult:
         lang, _, attrs = info.partition(" ")
         if lang.lower() == "mermaid":
             return _render_mermaid(token.content)
+        if lang.lower() == "d2":
+            return render_d2(token.content)
         return _highlight_code(token.content, lang, attrs)
 
     md.add_render_rule("fence", fence)

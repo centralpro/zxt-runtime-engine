@@ -128,6 +128,19 @@ def test_render_mermaid_fence():
     assert "code-block" not in result.html
 
 
+def test_render_d2_fence():
+    pytest = __import__("pytest")
+    from runtime_blog.diagram_renderer import d2_available
+    from runtime_blog.markdown_renderer import render_markdown
+
+    if not d2_available():
+        pytest.skip("d2 not installed")
+    result = render_markdown("```d2\ndirection: right\nA: Start -> B: End\n```")
+    assert "diagram-block--d2" in result.html
+    assert "<svg" in result.html
+    assert "mermaid" not in result.html
+
+
 def test_build_includes_mermaid_assets(tmp_path: Path):
     _write_minimal_content(tmp_path)
     (tmp_path / "content" / "posts" / "2026" / "diagram.md").write_text(

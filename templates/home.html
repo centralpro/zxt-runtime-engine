@@ -13,30 +13,32 @@
         <img
           src="{{ home.hero_image | default('/images/hero/blue-hour.jpg') }}"
           alt=""
-          width="2400"
-          height="1350"
           decoding="async"
           fetchpriority="high"
         >
       </picture>
     </div>
     <div class="hero-stage__veil" aria-hidden="true"></div>
-    <div class="hero-stage__content">
-      <p class="hero-stage__brand">{{ site.title }}</p>
-      <h1 class="hero-stage__headline">{{ home.headline | default("让想法，在真实世界里运行") }}</h1>
-      <p class="hero-stage__tagline">{{ home.tagline | default(site.description) }}</p>
-      <div class="hero-stage__links">
-        <a href="/photos/">影像</a>
-        <span aria-hidden="true">·</span>
-        <a href="/posts/">文章</a>
+    <div class="hero-stage__inner">
+      <div class="hero-stage__content">
+        <p class="hero-stage__brand">{{ site.title }}</p>
+        <h1 class="hero-stage__headline">{{ home.headline | default("让想法，在真实世界里运行") }}</h1>
+        <p class="hero-stage__tagline">{{ home.tagline | default(site.description) }}</p>
+        <div class="hero-stage__links">
+          <a href="/photos/">影像</a>
+          <span aria-hidden="true">·</span>
+          <a href="/posts/">文章</a>
+        </div>
       </div>
-    </div>
-    <a class="hero-stage__scroll" href="#latest-posts">
-      <span>{{ home.scroll_hint | default("继续向下") }}</span>
-    </a>
-    <div class="hero-stage__meta" aria-hidden="true">
-      <span>{{ home.coords | default("31.2304°N, 121.4737°E") }}</span>
-      <span data-hero-clock>—</span>
+      <div class="hero-stage__footer">
+        <a class="hero-stage__scroll" href="#latest-posts">
+          <span>{{ home.scroll_hint | default("继续向下") }}</span>
+        </a>
+        <div class="hero-stage__meta" aria-hidden="true">
+          <span>{{ home.coords | default("31.2304°N, 121.4737°E") }}</span>
+          <span data-hero-clock>—</span>
+        </div>
+      </div>
     </div>
   </section>
 
