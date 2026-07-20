@@ -1,41 +1,69 @@
 {% extends "base.html" %}
 {% block title %}{{ site.title }}{% endblock %}
-{% block content %}
-<section class="hero">
-  <p class="status-pill">
-    <span class="status-dot" aria-hidden="true"></span>
-    {{ home.status | default("Runtime online") }}
-  </p>
-  <h1 class="brand-hero">ZXT <span>/ Runtime</span></h1>
-  <p class="tagline">{{ home.tagline | default(site.description) }}</p>
-  {% if home.intro %}
-  <p class="intro">{{ home.intro }}</p>
-  {% endif %}
-  <div class="cta-row">
-    <a class="btn btn-primary" href="/posts/">阅读文章</a>
-    <a class="btn btn-ghost" href="/about/">关于</a>
-  </div>
-</section>
+{% block body_class %}page-home{% endblock %}
+{% block main %}
+<main>
+  <section class="hero-stage" aria-label="首页首屏">
+    <div
+      class="hero-stage__media"
+      style="background-image: url('{{ home.hero_image | default('/images/hero/blue-hour.jpg') }}')"
+    ></div>
+    <div class="hero-stage__veil" aria-hidden="true"></div>
+    <div class="hero-stage__content">
+      <p class="hero-stage__brand">{{ site.title }}</p>
+      <h1 class="hero-stage__headline">{{ home.headline | default("让想法，在真实世界里运行") }}</h1>
+      <p class="hero-stage__tagline">{{ home.tagline | default(site.description) }}</p>
+    </div>
+    <a class="hero-stage__scroll" href="#after-hero">
+      <span>{{ home.scroll_hint | default("继续向下") }}</span>
+    </a>
+    <div class="hero-stage__meta" aria-hidden="true">
+      <span>{{ home.coords | default("31.2304°N, 121.4737°E") }}</span>
+      <span data-hero-clock>—</span>
+    </div>
+  </section>
 
-{% if featured_posts %}
-<section class="section">
-  <h2>精选</h2>
-  <div class="post-list">
-    {% for post in featured_posts %}
-      {% include "components/post-item.html" %}
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
+  <div class="site-main site-main--home" id="after-hero">
+    {% if featured_posts %}
+    <section class="section" id="featured">
+      <h2>作品</h2>
+      <div class="post-list">
+        {% for post in featured_posts %}
+          {% include "components/post-item.html" %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
 
-<section class="section">
-  <h2>最新文章</h2>
-  <div class="post-list">
-    {% for post in latest_posts %}
-      {% include "components/post-item.html" %}
-    {% else %}
-    <p class="muted">暂无已发布文章。</p>
-    {% endfor %}
+    <section class="section">
+      <h2>最新文章</h2>
+      <div class="post-list">
+        {% for post in latest_posts %}
+          {% include "components/post-item.html" %}
+        {% else %}
+        <p class="muted">暂无已发布文章。</p>
+        {% endfor %}
+      </div>
+    </section>
   </div>
-</section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script>
+  (() => {
+    const el = document.querySelector("[data-hero-clock]");
+    if (!el) return;
+    const tick = () => {
+      el.textContent = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Shanghai",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(new Date());
+    };
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
 {% endblock %}

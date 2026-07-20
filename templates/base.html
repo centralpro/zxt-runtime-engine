@@ -7,14 +7,19 @@
   <meta name="description" content="{% block description %}{{ site.description }}{% endblock %}">
   <link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/favicon/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/runtime.css">
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   {% include "components/header.html" %}
+  {% block main %}
   <main class="site-main">
     {% block content %}{% endblock %}
   </main>
+  {% endblock %}
   {% include "components/footer.html" %}
   <script src="/assets/js/runtime.js" defer></script>
   <script src="/assets/js/analytics.js" defer></script>

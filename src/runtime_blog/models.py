@@ -13,7 +13,7 @@ class SiteConfig:
     url: str
     language: str = "zh-CN"
     author: str = "ZXT"
-    timezone: str = "Asia/Hong_Kong"
+    timezone: str = "Asia/Shanghai"
     raw: dict[str, Any] = field(default_factory=dict)
 
     @property

@@ -9,7 +9,7 @@
     </a>
     <nav class="site-nav" aria-label="主导航">
       {% for item in nav %}
-      <a href="{{ item.href }}">{{ item.label }}</a>
+      <a href="{{ item.href }}">{{ item.label }}</a>{% if not loop.last %}<span class="site-nav__sep" aria-hidden="true">/</span>{% endif %}
       {% endfor %}
     </nav>
   </div>

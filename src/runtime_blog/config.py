@@ -40,7 +40,7 @@ def load_site_config(root: Path) -> SiteConfig:
         url=str(raw["url"]),
         language=str(raw.get("language", "zh-CN")),
         author=str(raw.get("author", "ZXT")),
-        timezone=str(raw.get("timezone", "Asia/Hong_Kong")),
+        timezone=str(raw.get("timezone", "Asia/Shanghai")),
         raw=raw,
     )
 
