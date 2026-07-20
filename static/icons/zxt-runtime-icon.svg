@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ZXT Runtime icon</title>
+  <desc id="desc">A terminal prompt icon with execution green accent.</desc>
+
+  <rect width="512" height="512" rx="112" fill="#0B1019"/>
+  <rect x="64" y="64" width="384" height="384" rx="80" fill="#101722" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="4"/>
+
+  <path d="M142 162 L230 256 L142 350"
+        fill="none" stroke="#46D17D" stroke-width="34"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="258" y="327" width="112" height="30" rx="15" fill="#46D17D"/>
+  <circle cx="369" cy="143" r="16" fill="#46D17D"/>
+</svg>

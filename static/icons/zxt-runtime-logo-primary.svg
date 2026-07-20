@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">ZXT / Runtime</title>
+  <desc id="desc">A minimal terminal-inspired logo for ZXT Runtime.</desc>
+
+  <rect width="1200" height="320" rx="36" fill="#0B1019"/>
+
+  <g transform="translate(64 56)">
+    <rect x="0" y="0" width="208" height="208" rx="36" fill="#101722" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
+    <path d="M54 66 L96 104 L54 142" fill="none" stroke="#46D17D" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="112" y="134" width="48" height="14" rx="7" fill="#46D17D"/>
+    <circle cx="166" cy="42" r="8" fill="#46D17D"/>
+  </g>
+
+  <g transform="translate(330 78)">
+    <text x="0" y="82" fill="#E8EDF3"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+          font-size="82" font-weight="700" letter-spacing="1">ZXT</text>
+    <text x="194" y="82" fill="#707B89"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+          font-size="70" font-weight="400">/</text>
+    <text x="246" y="82" fill="#E8EDF3"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+          font-size="82" font-weight="500" letter-spacing="0.5">Runtime</text>
+
+    <text x="2" y="146" fill="#A5AFBD"
+          font-family="JetBrains Mono, SFMono-Regular, Consolas, monospace"
+          font-size="24" font-weight="400" letter-spacing="1.5">AI · PRODUCT · ENGINEERING</text>
+
+    <rect x="2" y="177" width="610" height="2" fill="#FFFFFF" fill-opacity="0.08"/>
+    <circle cx="12" cy="212" r="6" fill="#46D17D"/>
+    <text x="30" y="220" fill="#707B89"
+          font-family="JetBrains Mono, SFMono-Regular, Consolas, monospace"
+          font-size="20">SYSTEM ONLINE</text>
+  </g>
+</svg>
