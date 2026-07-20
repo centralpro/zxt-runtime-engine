@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}文章 · {{ site.title }}{% endblock %}
+{% block content %}
+<section class="section">
+  <h1>文章</h1>
+  <div class="post-list">
+    {% for post in posts %}
+      {% include "components/post-item.html" %}
+    {% else %}
+    <p class="muted">暂无已发布文章。</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

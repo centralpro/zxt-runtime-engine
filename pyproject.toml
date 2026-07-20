@@ -1,0 +1,50 @@
+[project]
+name = "zxt-runtime-blog"
+version = "0.1.0"
+description = "ZXT / Runtime static blog generator"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "ZXT" }]
+dependencies = [
+    "jinja2>=3.1.4",
+    "linkify-it-py>=2.0.3",
+    "markdown-it-py>=3.0.0",
+    "mdit-py-plugins>=0.4.2",
+    "pygments>=2.18.0",
+    "pyyaml>=6.0.2",
+    "python-slugify>=8.0.4",
+    "typer>=0.15.1",
+    "watchdog>=6.0.0",
+    "rich>=13.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]
+
+[project.scripts]
+runtime-blog = "runtime_blog.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/runtime_blog"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"templates" = "runtime_blog/templates"
+"static" = "runtime_blog/static"
+
+[tool.hatch.build.targets.wheel.sources]
+"src/runtime_blog" = "runtime_blog"
+
+[tool.uv]
+package = true
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
