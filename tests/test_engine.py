@@ -141,6 +141,45 @@ def test_render_d2_fence():
     assert "mermaid" not in result.html
 
 
+def test_published_posts_newest_first_same_day(tmp_path: Path):
+    _write_minimal_content(tmp_path)
+    posts_dir = tmp_path / "content" / "posts" / "2026"
+    (posts_dir / "older.md").write_text(
+        """---
+title: Older Same Day
+slug: older-same-day
+description: first
+date: 2026-07-20
+category: Notes
+tags: [a]
+draft: false
+---
+body
+""",
+        encoding="utf-8",
+    )
+    (posts_dir / "newer.md").write_text(
+        """---
+title: Newer Same Day
+slug: newer-same-day
+description: second
+date: 2026-07-20
+published_at: 2026-07-20 18:00
+category: Notes
+tags: [a]
+draft: false
+---
+body
+""",
+        encoding="utf-8",
+    )
+    from runtime_blog.content_loader import discover_posts, published_posts
+
+    ordered = published_posts(discover_posts(tmp_path))
+    slugs = [p.slug for p in ordered]
+    assert slugs.index("newer-same-day") < slugs.index("older-same-day")
+
+
 def test_build_includes_mermaid_assets(tmp_path: Path):
     _write_minimal_content(tmp_path)
     (tmp_path / "content" / "posts" / "2026" / "diagram.md").write_text(

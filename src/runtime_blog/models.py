@@ -32,6 +32,7 @@ class Post:
     draft: bool
     source_path: Path
     body_md: str
+    published_at: datetime | None = None
     updated: date | None = None
     featured: bool = False
     hidden: bool = False

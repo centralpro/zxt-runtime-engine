@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, time
 from pathlib import Path
 
 import yaml
@@ -33,6 +33,21 @@ def _parse_date(value: object, field_name: str) -> date:
     raise ValueError(f"Invalid date for {field_name}: {value!r}")
 
 
+def _parse_published_at(value: object, fallback: date) -> datetime:
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=None) if value.tzinfo else value
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return datetime.combine(value, time.min)
+    if isinstance(value, str):
+        text = value.strip().replace("T", " ")
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(text, fmt)
+            except ValueError:
+                continue
+    raise ValueError(f"Invalid published_at/date time: {value!r}")
+
+
 def _as_str(value: object, default: str = "") -> str:
     if value is None:
         return default
@@ -45,13 +60,18 @@ def load_post(path: Path) -> Post:
     tags = meta.get("tags") or []
     if not isinstance(tags, list):
         raise ValueError(f"{path}: tags must be a list")
+    post_date = (
+        _parse_date(meta.get("date", date.today()), "date")
+        if meta.get("date") is not None
+        else date.today()
+    )
+    published_raw = meta.get("published_at") or meta.get("date")
     return Post(
         title=_as_str(meta.get("title")),
         slug=_as_str(meta.get("slug")),
         description=_as_str(meta.get("description")),
-        date=_parse_date(meta.get("date", date.today()), "date")
-        if meta.get("date") is not None
-        else date.today(),
+        date=post_date,
+        published_at=_parse_published_at(published_raw, post_date),
         updated=_parse_date(meta["updated"], "updated") if meta.get("updated") else None,
         category=_as_str(meta.get("category")),
         tags=[str(t) for t in tags],
@@ -197,11 +217,16 @@ def load_site_data(root: Path) -> SiteData:
     )
 
 
+def _post_sort_key(post: Post) -> tuple[float, str]:
+    """Newest first by published_at; slug ascending breaks ties."""
+    when = post.published_at or datetime.combine(post.date, time.min)
+    return (-when.timestamp(), post.slug)
+
+
 def published_posts(posts: list[Post]) -> list[Post]:
     return sorted(
         [p for p in posts if p.in_indexes],
-        key=lambda p: (p.date, p.slug),
-        reverse=True,
+        key=_post_sort_key,
     )
 
 
